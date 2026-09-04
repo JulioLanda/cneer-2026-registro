@@ -46,6 +46,12 @@ button.primary{background:var(--primary);color:#fff}button.secondary{background:
 <button class="primary big" onclick="startScanner()">📷 Escanear QR</button>
 <button class="secondary big" onclick="showSearch()">🔎 Buscar asistente</button>
 <div id="reader"></div>
+<button
+  id="cancelScanButton"
+  class="secondary big hidden"
+  onclick="cancelScanner()">
+  Cancelar escaneo
+</button>
 </section>
 
 <section id="searchCard" class="card hidden">
@@ -142,17 +148,59 @@ async function runBackend(functionName,parameters=[]){
   return data.response?.result;
 }
 
-async function startScanner(){
-  document.getElementById('reader').innerHTML='';
-  scanner=new Html5Qrcode('reader');
-  try{
-    await scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:250,height:250}},onQrRead);
-  }catch(error){showError('No se pudo iniciar la cámara: '+error)}
+async function startScanner() {
+  document.getElementById('reader').innerHTML = '';
+
+  toggle('cancelScanButton', true);
+
+  scanner = new Html5Qrcode('reader');
+
+  try {
+    await scanner.start(
+      { facingMode: 'environment' },
+      {
+        fps: 10,
+        qrbox: {
+          width: 250,
+          height: 250
+        }
+      },
+      onQrRead
+    );
+  }
+  catch (error) {
+    toggle('cancelScanButton', false);
+    showError('No se pudo iniciar la cámara: ' + error);
+  }
+}
+
+async function cancelScanner() {
+  try {
+    if (scanner) {
+      const state = scanner.getState();
+
+      if (state === 2 || state === 3) {
+        await scanner.stop();
+      }
+    }
+  }
+  catch (e) {
+    console.warn(e);
+  }
+
+  scanner = null;
+
+  document.getElementById('reader').innerHTML = '';
+
+  toggle('cancelScanButton', false);
+
+  goHome();
 }
 
 async function onQrRead(decodedText){
   try{
     if(scanner)await scanner.stop();
+    toggle('cancelScanButton', false);
     document.getElementById('reader').innerHTML='';
     const token=extractToken(decodedText);
     loading(true);
