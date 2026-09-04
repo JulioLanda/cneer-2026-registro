@@ -4,35 +4,93 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>CNEER 2026 - Prueba QR</title>
+  <title>CNEER 2026 - Registro</title>
 
+  <!-- Lector QR -->
   <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 500px;
+      max-width: 520px;
       margin: auto;
       padding: 20px;
-      text-align: center;
+      background: #f5f6f8;
+      color: #202124;
+    }
+
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
     }
 
     h1 {
-      margin-bottom: 5px;
+      margin-bottom: 4px;
+      text-align: center;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-top: 0;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: 0;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .primary {
+      background: #1f4e79;
+      color: white;
+    }
+
+    .secondary {
+      background: #e9edf2;
     }
 
     #reader {
       width: 100%;
-      margin-top: 20px;
+      margin-top: 15px;
     }
 
-    #resultado {
-      margin-top: 20px;
-      padding: 15px;
-      border-radius: 10px;
-      background: #eeeeee;
+    .hidden {
+      display: none;
+    }
+
+    .success {
+      color: #176b36;
       font-weight: bold;
-      word-break: break-word;
+    }
+
+    .error {
+      color: #a12622;
+      font-weight: bold;
+    }
+
+    .dato {
+      margin: 8px 0;
+    }
+
+    .etiqueta {
+      color: #666;
+      font-size: 13px;
+    }
+
+    .valor {
+      font-weight: bold;
     }
   </style>
 </head>
@@ -40,35 +98,405 @@
 <body>
 
   <h1>CNEER 2026</h1>
-  <p>Prueba de escáner QR</p>
+  <p class="subtitle">Registro de asistentes</p>
 
-  <div id="reader"></div>
+  <!-- LOGIN -->
+  <div id="loginCard" class="card">
+    <h2>Acceso de staff</h2>
 
-  <div id="resultado">
-    Esperando código QR...
+    <p>
+      Inicia sesión con una cuenta autorizada para utilizar
+      el sistema de registro.
+    </p>
+
+    <button class="primary" onclick="loginGoogle()">
+      Iniciar sesión con Google
+    </button>
+
+    <div id="loginStatus"></div>
   </div>
 
-  <script>
 
-    function qrLeido(texto) {
+  <!-- ESCÁNER -->
+  <div id="scannerCard" class="card hidden">
 
-      document.getElementById("resultado").innerHTML =
-        "QR leído:<br><br>" + texto;
+    <div class="success" id="userInfo"></div>
+
+    <h2>Escanear asistente</h2>
+
+    <button id="scanButton" class="primary" onclick="startScanner()">
+      Escanear QR
+    </button>
+
+    <div id="reader"></div>
+
+  </div>
+
+
+  <!-- RESULTADO -->
+  <div id="attendeeCard" class="card hidden">
+
+    <h2 id="nombre"></h2>
+
+    <div class="dato">
+      <div class="etiqueta">Folio</div>
+      <div class="valor" id="folio"></div>
+    </div>
+
+    <div class="dato">
+      <div class="etiqueta">Institución</div>
+      <div class="valor" id="institucion"></div>
+    </div>
+
+    <div class="dato">
+      <div class="etiqueta">Correo</div>
+      <div class="valor" id="correo"></div>
+    </div>
+
+    <div class="dato">
+      <div class="etiqueta">Participación</div>
+      <div class="valor" id="participacion"></div>
+    </div>
+
+    <div class="dato">
+      <div class="etiqueta">Taller</div>
+      <div class="valor" id="taller"></div>
+    </div>
+
+    <button class="primary" onclick="scanAnother()">
+      Escanear siguiente
+    </button>
+
+  </div>
+
+
+  <div id="errorCard" class="card hidden error"></div>
+
+
+<script>
+
+  // ==============================
+  // CONFIGURACIÓN
+  // ==============================
+
+  const CLIENT_ID =
+    '136023587300-0g45vntc4519hodvvanovkl78nerf082.apps.googleusercontent.com';
+
+  const DEPLOYMENT_ID =
+    'AKfycbzkj9j8UM763OdYtx_nf2SelX5QBCmzBGTVzRns2hr6WMS-thEcFsEHSfgj0J-y_hCGXQ';
+
+  const AUTHORIZED_EMAIL =
+    'jclalo@ier.unam.mx';
+
+  const API_URL =
+    `https://script.googleapis.com/v1/scripts/${DEPLOYMENT_ID}:run`;
+
+  let accessToken = null;
+  let tokenClient = null;
+  let scanner = null;
+
+
+  // ==============================
+  // LOGIN GOOGLE
+  // ==============================
+
+  function loginGoogle() {
+
+    tokenClient = google.accounts.oauth2.initTokenClient({
+
+      client_id: CLIENT_ID,
+
+      scope:
+        'https://www.googleapis.com/auth/userinfo.email ' +
+        'https://www.googleapis.com/auth/spreadsheets',
+
+      callback: async (response) => {
+
+        if (response.error) {
+          showError('No se pudo iniciar sesión con Google.');
+          return;
+        }
+
+        accessToken = response.access_token;
+
+        await verifyUser();
+
+      }
+    });
+
+    tokenClient.requestAccessToken({
+      prompt: 'select_account'
+    });
+  }
+
+
+  async function verifyUser() {
+
+    try {
+
+      const response = await fetch(
+        'https://www.googleapis.com/oauth2/v3/userinfo',
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        }
+      );
+
+      const user = await response.json();
+
+      const email =
+        String(user.email || '').toLowerCase();
+
+      if (email !== AUTHORIZED_EMAIL) {
+
+        accessToken = null;
+
+        document.getElementById('loginStatus').innerHTML =
+          `<p class="error">
+            Esta cuenta no está autorizada:
+            ${email}
+          </p>`;
+
+        return;
+      }
+
+
+      // Probamos además el backend.
+      const ping = await runBackend('apiPing', []);
+
+      document.getElementById('loginCard')
+        .classList.add('hidden');
+
+      document.getElementById('scannerCard')
+        .classList.remove('hidden');
+
+      document.getElementById('userInfo').textContent =
+        `Sesión: ${ping.email}`;
+
+    }
+    catch (error) {
+
+      showError(error.message);
+
+    }
+  }
+
+
+  // ==============================
+  // APPS SCRIPT API
+  // ==============================
+
+  async function runBackend(functionName, parameters = []) {
+
+    const response = await fetch(API_URL, {
+
+      method: 'POST',
+
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+
+      body: JSON.stringify({
+        function: functionName,
+        parameters: parameters,
+
+        // Para pruebas usa siempre el código más reciente guardado.
+        devMode: true
+      })
+
+    });
+
+
+    const data = await response.json();
+
+
+    if (!response.ok) {
+
+      console.error(data);
+
+      throw new Error(
+        data.error?.message ||
+        'Error de comunicación con Apps Script.'
+      );
 
     }
 
-    const scanner = new Html5QrcodeScanner(
-      "reader",
-      {
-        fps: 10,
-        qrbox: 250
-      },
-      false
-    );
 
-    scanner.render(qrLeido);
+    if (data.error) {
 
-  </script>
+      console.error(data.error);
+
+      throw new Error(
+        data.error.message ||
+        'El backend devolvió un error.'
+      );
+
+    }
+
+
+    return data.response?.result;
+
+  }
+
+
+  // ==============================
+  // ESCÁNER QR
+  // ==============================
+
+  async function startScanner() {
+
+    document.getElementById('scanButton')
+      .classList.add('hidden');
+
+    scanner = new Html5Qrcode('reader');
+
+    try {
+
+      await scanner.start(
+
+        { facingMode: 'environment' },
+
+        {
+          fps: 10,
+          qrbox: {
+            width: 250,
+            height: 250
+          }
+        },
+
+        onQrRead
+
+      );
+
+    }
+    catch (error) {
+
+      showError(
+        'No se pudo iniciar la cámara: ' +
+        error
+      );
+
+    }
+
+  }
+
+
+  async function onQrRead(decodedText) {
+
+    try {
+
+      await scanner.stop();
+
+      document.getElementById('reader').innerHTML = '';
+
+      const token = extractToken(decodedText);
+
+      const attendee =
+        await runBackend(
+          'apiGetAttendeeByToken',
+          [token]
+        );
+
+      showAttendee(attendee);
+
+    }
+    catch (error) {
+
+      showError(error.message);
+
+    }
+
+  }
+
+
+  // Soporta tanto QR nuevos que sólo tengan TOKEN
+  // como los QR antiguos que llevan ?token=...
+  function extractToken(text) {
+
+    const value = String(text || '').trim();
+
+    try {
+
+      const url = new URL(value);
+
+      const token =
+        url.searchParams.get('token');
+
+      if (token) {
+        return token;
+      }
+
+    }
+    catch (e) {
+      // No era una URL. Se usa como token directamente.
+    }
+
+    return value;
+
+  }
+
+
+  // ==============================
+  // FICHA
+  // ==============================
+
+  function showAttendee(a) {
+
+    document.getElementById('scannerCard')
+      .classList.add('hidden');
+
+    document.getElementById('attendeeCard')
+      .classList.remove('hidden');
+
+    document.getElementById('nombre').textContent =
+      a.Nombre || '';
+
+    document.getElementById('folio').textContent =
+      a.Folio || '';
+
+    document.getElementById('institucion').textContent =
+      a.Institucion || '';
+
+    document.getElementById('correo').textContent =
+      a.Correo || '';
+
+    document.getElementById('participacion').textContent =
+      a.TipoParticipacion || '';
+
+    document.getElementById('taller').textContent =
+      a.Taller || 'Sin seleccionar';
+
+  }
+
+
+  function scanAnother() {
+
+    document.getElementById('attendeeCard')
+      .classList.add('hidden');
+
+    document.getElementById('scannerCard')
+      .classList.remove('hidden');
+
+    document.getElementById('scanButton')
+      .classList.remove('hidden');
+
+  }
+
+
+  function showError(message) {
+
+    const box =
+      document.getElementById('errorCard');
+
+    box.textContent = message;
+
+    box.classList.remove('hidden');
+
+  }
+
+</script>
 
 </body>
 </html>
