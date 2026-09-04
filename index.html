@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>CNEER 2026 - Prueba QR</title>
+
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: auto;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 5px;
+    }
+
+    #reader {
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    #resultado {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      background: #eeeeee;
+      font-weight: bold;
+      word-break: break-word;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>CNEER 2026</h1>
+  <p>Prueba de escáner QR</p>
+
+  <div id="reader"></div>
+
+  <div id="resultado">
+    Esperando código QR...
+  </div>
+
+  <script>
+
+    function qrLeido(texto) {
+
+      document.getElementById("resultado").innerHTML =
+        "QR leído:<br><br>" + texto;
+
+    }
+
+    const scanner = new Html5QrcodeScanner(
+      "reader",
+      {
+        fps: 10,
+        qrbox: 250
+      },
+      false
+    );
+
+    scanner.render(qrLeido);
+
+  </script>
+
+</body>
+</html>
