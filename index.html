@@ -1,502 +1,297 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>CNEER 2026 - Registro</title>
-
-  <!-- Lector QR -->
-  <script src="https://unpkg.com/html5-qrcode"></script>
-
-  <!-- Google Identity Services -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 520px;
-      margin: auto;
-      padding: 20px;
-      background: #f5f6f8;
-      color: #202124;
-    }
-
-    .card {
-      background: white;
-      border-radius: 14px;
-      padding: 20px;
-      margin-bottom: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.08);
-    }
-
-    h1 {
-      margin-bottom: 4px;
-      text-align: center;
-    }
-
-    .subtitle {
-      text-align: center;
-      color: #666;
-      margin-top: 0;
-    }
-
-    button {
-      width: 100%;
-      padding: 14px;
-      border: 0;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    .primary {
-      background: #1f4e79;
-      color: white;
-    }
-
-    .secondary {
-      background: #e9edf2;
-    }
-
-    #reader {
-      width: 100%;
-      margin-top: 15px;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .success {
-      color: #176b36;
-      font-weight: bold;
-    }
-
-    .error {
-      color: #a12622;
-      font-weight: bold;
-    }
-
-    .dato {
-      margin: 8px 0;
-    }
-
-    .etiqueta {
-      color: #666;
-      font-size: 13px;
-    }
-
-    .valor {
-      font-weight: bold;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CNEER 2026 - Registro</title>
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--text:#202124;--muted:#6b7280;--line:#e5e7eb;--green-bg:#e8f5e9;--green:#176b36;--yellow-bg:#fff7db;--yellow:#825f00;--red-bg:#fdecec;--red:#a12622;--primary:#285b87}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+.app{max-width:620px;margin:0 auto;padding:22px 14px 50px}.header{text-align:center;margin:4px 0 20px}.header h1{margin:0;font-size:30px}.header p{margin:6px 0 0;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:14px;box-shadow:0 2px 7px rgba(0,0,0,.05)}
+h2,h3{margin-top:0}label{display:block;font-weight:700;margin-bottom:6px}
+input,select,textarea{width:100%;border:1px solid #cfd4dc;border-radius:10px;padding:12px;font-size:16px;background:white}
+textarea{min-height:90px;resize:vertical}
+button{border:0;border-radius:10px;padding:13px 15px;font-size:16px;font-weight:700;cursor:pointer}
+button.primary{background:var(--primary);color:#fff}button.secondary{background:#eef1f5;color:#263238}button.success{background:#1b7f46;color:#fff}button.warning{background:#9b6d00;color:#fff}
+.big{width:100%;margin-top:10px;padding:15px}.hidden{display:none!important}
+.status{border-radius:12px;padding:14px;margin-bottom:14px;font-weight:700}.status.GREEN{background:var(--green-bg);color:var(--green)}.status.YELLOW{background:var(--yellow-bg);color:var(--yellow)}.status.RED{background:var(--red-bg);color:var(--red)}
+.status-title{font-size:19px;margin-bottom:4px}.missing{margin:8px 0 0 18px;padding:0}.grid{display:grid;grid-template-columns:1fr;gap:10px}
+.field{border-bottom:1px solid var(--line);padding-bottom:9px}.field-name{color:var(--muted);font-size:13px;margin-bottom:3px}.field-value{font-weight:600;word-break:break-word}
+.section-title{margin:20px 0 10px;font-size:17px}.action{margin-top:14px}.muted{color:var(--muted);font-size:14px}
+.search-row{display:grid;grid-template-columns:1fr auto;gap:8px}.result{padding:12px 0;border-bottom:1px solid var(--line)}.result:last-child{border-bottom:0}.result-name{font-size:17px;font-weight:700}
+.pill{display:inline-block;padding:6px 10px;border-radius:999px;font-size:13px;font-weight:700;background:var(--green-bg);color:var(--green)}
+#reader{width:100%;margin-top:12px}
+#loading{position:fixed;inset:0;background:rgba(255,255,255,.78);display:none;align-items:center;justify-content:center;z-index:50;font-weight:700;font-size:18px}
+#toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#202124;color:white;padding:12px 16px;border-radius:10px;max-width:calc(100% - 30px);z-index:60;display:none}
+.topline{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:10px}
+@media(min-width:520px){.grid.two{grid-template-columns:1fr 1fr}}
+</style>
 </head>
-
 <body>
+<div id="loading">Procesando…</div><div id="toast"></div>
+<main class="app">
+<div class="header"><h1>CNEER 2026</h1><p>Registro de asistentes</p></div>
 
-  <h1>CNEER 2026</h1>
-  <p class="subtitle">Registro de asistentes</p>
+<section id="loginCard" class="card">
+<h2>Acceso de staff</h2>
+<p>Inicia sesión con una cuenta autorizada para utilizar el sistema de registro.</p>
+<button class="primary big" onclick="loginGoogle()">Iniciar sesión con Google</button>
+</section>
 
-  <!-- LOGIN -->
-  <div id="loginCard" class="card">
-    <h2>Acceso de staff</h2>
+<section id="homeCard" class="card hidden">
+<div class="topline"><div><strong id="userInfo"></strong><div class="muted">Personal autorizado</div></div></div>
+<button class="primary big" onclick="startScanner()">📷 Escanear QR</button>
+<button class="secondary big" onclick="showSearch()">🔎 Buscar asistente</button>
+<div id="reader"></div>
+</section>
 
-    <p>
-      Inicia sesión con una cuenta autorizada para utilizar
-      el sistema de registro.
-    </p>
+<section id="searchCard" class="card hidden">
+<div class="topline"><h2 style="margin:0">Buscar asistente</h2><button class="secondary" onclick="goHome()">← Volver</button></div>
+<div class="search-row"><input id="searchInput" placeholder="Nombre, correo o folio"><button class="primary" onclick="search()">Buscar</button></div>
+<div id="results"></div>
+</section>
 
-    <button class="primary" onclick="loginGoogle()">
-      Iniciar sesión con Google
-    </button>
+<section id="attendeeSection" class="hidden">
+<button class="secondary" onclick="scanAnother()">← Escanear otro</button>
+<div id="statusBox" style="margin-top:12px"></div>
 
-    <div id="loginStatus"></div>
-  </div>
+<div class="card">
+<h2 id="name"></h2><div class="muted" id="institution"></div><div class="muted" id="folio"></div>
+<h3 class="section-title">Datos del asistente</h3>
+<div class="grid two">
+<div class="field"><div class="field-name">Correo</div><div class="field-value" id="email"></div></div>
+<div class="field"><div class="field-name">Tipo de participación</div><div class="field-value" id="type"></div></div>
+<div class="field"><div class="field-name">Taller</div><div class="field-value" id="workshop"></div></div>
+<div class="field"><div class="field-name">Pago</div><div class="field-value" id="payment"></div></div>
+<div class="field"><div class="field-name">Kit</div><div class="field-value" id="kit"></div></div>
+<div class="field"><div class="field-name">Registro</div><div class="field-value" id="registration"></div></div>
+</div>
 
+<div id="oralBlock" class="hidden"><h3 class="section-title">Presentación oral</h3><div class="grid two">
+<div class="field"><div class="field-name">Fecha</div><div class="field-value" id="oralDate"></div></div>
+<div class="field"><div class="field-name">Hora</div><div class="field-value" id="oralTime"></div></div>
+<div class="field"><div class="field-name">Lugar</div><div class="field-value" id="oralPlace"></div></div>
+</div></div>
 
-  <!-- ESCÁNER -->
-  <div id="scannerCard" class="card hidden">
+<div id="posterBlock" class="hidden"><h3 class="section-title">Presentación de cartel</h3><div class="grid two">
+<div class="field"><div class="field-name">Fecha</div><div class="field-value" id="posterDate"></div></div>
+<div class="field"><div class="field-name">Hora</div><div class="field-value" id="posterTime"></div></div>
+<div class="field"><div class="field-name">Lugar</div><div class="field-value" id="posterPlace"></div></div>
+<div class="field"><div class="field-name">Número</div><div class="field-value" id="posterNumber"></div></div>
+</div></div>
+</div>
 
-    <div class="success" id="userInfo"></div>
-
-    <h2>Escanear asistente</h2>
-
-    <button id="scanButton" class="primary" onclick="startScanner()">
-      Escanear QR
-    </button>
-
-    <div id="reader"></div>
-
-  </div>
-
-
-  <!-- RESULTADO -->
-  <div id="attendeeCard" class="card hidden">
-
-    <h2 id="nombre"></h2>
-
-    <div class="dato">
-      <div class="etiqueta">Folio</div>
-      <div class="valor" id="folio"></div>
-    </div>
-
-    <div class="dato">
-      <div class="etiqueta">Institución</div>
-      <div class="valor" id="institucion"></div>
-    </div>
-
-    <div class="dato">
-      <div class="etiqueta">Correo</div>
-      <div class="valor" id="correo"></div>
-    </div>
-
-    <div class="dato">
-      <div class="etiqueta">Participación</div>
-      <div class="valor" id="participacion"></div>
-    </div>
-
-    <div class="dato">
-      <div class="etiqueta">Taller</div>
-      <div class="valor" id="taller"></div>
-    </div>
-
-    <button class="primary" onclick="scanAnother()">
-      Escanear siguiente
-    </button>
-
-  </div>
-
-
-  <div id="errorCard" class="card hidden error"></div>
-
+<div class="card">
+<h2>Acciones</h2>
+<div id="workshopAction" class="action hidden"><label for="workshopSelect">Seleccionar taller</label><select id="workshopSelect"></select><button class="primary big" onclick="saveWorkshop()">Guardar taller</button></div>
+<div id="paymentAction" class="action hidden"><p><strong>Pago pendiente.</strong> Valídalo únicamente después de verificarlo.</p><button class="warning big" onclick="confirmPayment()">Validar pago</button></div>
+<div id="kitAction" class="action hidden"><p id="kitActionText"></p><button class="success big" onclick="deliverKit()">Confirmar entrega de kit</button></div>
+<div id="registerAction" class="action hidden"><button class="success big" onclick="registerAttendee()">Confirmar registro</button></div>
+<div id="alreadyDone" class="action hidden"><span class="pill">✓ Registro ya completado</span></div>
+<hr style="border:0;border-top:1px solid var(--line);margin:22px 0">
+<label for="observations">Observaciones</label><textarea id="observations" placeholder="Añadir nota o incidencia..."></textarea>
+<button class="secondary big" onclick="saveObservation()">Guardar observación</button>
+</div>
+</section>
+</main>
 
 <script>
+const CLIENT_ID='136023587300-0g45vntc4519hodvvanovkl78nerf082.apps.googleusercontent.com';
+const DEPLOYMENT_ID='AKfycbx_j3ZxYo1nc4rKkpatE9xTCD65Pjznh7NUWxW2SQZEd0iLEMp0D7mWoFNsDz7M4N2G9w';
+const AUTHORIZED_EMAIL='jclalo@ier.unam.mx';
+const API_URL=`https://script.googleapis.com/v1/scripts/${DEPLOYMENT_ID}:run`;
 
-  // ==============================
-  // CONFIGURACIÓN
-  // ==============================
+let accessToken=null,scanner=null,current=null,workshops=[];
 
-  const CLIENT_ID =
-    '136023587300-0g45vntc4519hodvvanovkl78nerf082.apps.googleusercontent.com';
+document.getElementById('searchInput').addEventListener('keydown',e=>{if(e.key==='Enter')search()});
 
-  const DEPLOYMENT_ID =
-    'AKfycbx_j3ZxYo1nc4rKkpatE9xTCD65Pjznh7NUWxW2SQZEd0iLEMp0D7mWoFNsDz7M4N2G9w';
+function loginGoogle(){
+  const tokenClient=google.accounts.oauth2.initTokenClient({
+    client_id:CLIENT_ID,
+    scope:'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/spreadsheets',
+    callback:async response=>{
+      if(response.error){showError('No se pudo iniciar sesión con Google.');return}
+      accessToken=response.access_token;
+      try{
+        const userResponse=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:`Bearer ${accessToken}`}});
+        const user=await userResponse.json();
+        const email=String(user.email||'').toLowerCase();
+        if(email!==AUTHORIZED_EMAIL){accessToken=null;showError(`Esta cuenta no está autorizada: ${email}`);return}
+        const ping=await runBackend('apiPing');
+        document.getElementById('loginCard').classList.add('hidden');
+        document.getElementById('homeCard').classList.remove('hidden');
+        document.getElementById('userInfo').textContent=ping.email;
+        workshops=await runBackend('apiGetWorkshops');
+      }catch(error){showError(error.message)}
+    }
+  });
+  tokenClient.requestAccessToken({prompt:'select_account'});
+}
 
-  const AUTHORIZED_EMAIL =
-    'jclalo@ier.unam.mx';
-
-  const API_URL =
-    `https://script.googleapis.com/v1/scripts/${DEPLOYMENT_ID}:run`;
-
-  let accessToken = null;
-  let tokenClient = null;
-  let scanner = null;
-
-
-  // ==============================
-  // LOGIN GOOGLE
-  // ==============================
-
-  function loginGoogle() {
-
-    tokenClient = google.accounts.oauth2.initTokenClient({
-
-      client_id: CLIENT_ID,
-
-      scope:
-        'https://www.googleapis.com/auth/userinfo.email ' +
-        'https://www.googleapis.com/auth/spreadsheets',
-
-      callback: async (response) => {
-
-        if (response.error) {
-          showError('No se pudo iniciar sesión con Google.');
-          return;
-        }
-
-        accessToken = response.access_token;
-
-        await verifyUser();
-
-      }
-    });
-
-    tokenClient.requestAccessToken({
-      prompt: 'select_account'
-    });
+async function runBackend(functionName,parameters=[]){
+  const response=await fetch(API_URL,{method:'POST',headers:{Authorization:`Bearer ${accessToken}`,'Content-Type':'application/json'},body:JSON.stringify({function:functionName,parameters})});
+  const data=await response.json();
+  if(!response.ok)throw new Error(data.error?.message||'Error de comunicación con Apps Script.');
+  if(data.error){
+    const detail=data.error?.details?.[0]?.errorMessage||data.error?.message||'El backend devolvió un error.';
+    throw new Error(detail);
   }
-
-
-  async function verifyUser() {
-
-    try {
-
-      const response = await fetch(
-        'https://www.googleapis.com/oauth2/v3/userinfo',
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`
-          }
-        }
-      );
-
-      const user = await response.json();
-
-      const email =
-        String(user.email || '').toLowerCase();
-
-      if (email !== AUTHORIZED_EMAIL) {
-
-        accessToken = null;
-
-        document.getElementById('loginStatus').innerHTML =
-          `<p class="error">
-            Esta cuenta no está autorizada:
-            ${email}
-          </p>`;
-
-        return;
-      }
-
-
-      // Probamos además el backend.
-      const ping = await runBackend('apiPing', []);
-
-      document.getElementById('loginCard')
-        .classList.add('hidden');
-
-      document.getElementById('scannerCard')
-        .classList.remove('hidden');
-
-      document.getElementById('userInfo').textContent =
-        `Sesión: ${ping.email}`;
-
-    }
-    catch (error) {
-
-      showError(error.message);
-
-    }
-  }
-
-
-  // ==============================
-  // APPS SCRIPT API
-  // ==============================
-
-  async function runBackend(functionName, parameters = []) {
-
-    const response = await fetch(API_URL, {
-
-      method: 'POST',
-
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
-      },
-
-      body: JSON.stringify({
-        function: functionName,
-        parameters: parameters,
-
-        // Para pruebas usa siempre el código más reciente guardado.
-        devMode: true
-      })
-
-    });
-
-
-    const data = await response.json();
-
-
-    if (!response.ok) {
-
-      console.error(data);
-
-      throw new Error(
-        data.error?.message ||
-        'Error de comunicación con Apps Script.'
-      );
-
-    }
-
-
-    if (data.error) {
-
-      console.error(data.error);
-
-      throw new Error(
-        data.error.message ||
-        'El backend devolvió un error.'
-      );
-
-    }
-
-
-    return data.response?.result;
-
-  }
-
-
-  // ==============================
-  // ESCÁNER QR
-  // ==============================
-
-  async function startScanner() {
-
-    document.getElementById('scanButton')
-      .classList.add('hidden');
-
-    scanner = new Html5Qrcode('reader');
-
-    try {
-
-      await scanner.start(
-
-        { facingMode: 'environment' },
-
-        {
-          fps: 10,
-          qrbox: {
-            width: 250,
-            height: 250
-          }
-        },
-
-        onQrRead
-
-      );
-
-    }
-    catch (error) {
-
-      showError(
-        'No se pudo iniciar la cámara: ' +
-        error
-      );
-
-    }
-
-  }
-
-
-  async function onQrRead(decodedText) {
-
-    try {
-
-      await scanner.stop();
-
-      document.getElementById('reader').innerHTML = '';
-
-      const token = extractToken(decodedText);
-
-      const attendee =
-        await runBackend(
-          'apiGetAttendeeByToken',
-          [token]
-        );
-
-      showAttendee(attendee);
-
-    }
-    catch (error) {
-
-      showError(error.message);
-
-    }
-
-  }
-
-
-  // Soporta tanto QR nuevos que sólo tengan TOKEN
-  // como los QR antiguos que llevan ?token=...
-  function extractToken(text) {
-
-    const value = String(text || '').trim();
-
-    try {
-
-      const url = new URL(value);
-
-      const token =
-        url.searchParams.get('token');
-
-      if (token) {
-        return token;
-      }
-
-    }
-    catch (e) {
-      // No era una URL. Se usa como token directamente.
-    }
-
-    return value;
-
-  }
-
-
-  // ==============================
-  // FICHA
-  // ==============================
-
-  function showAttendee(a) {
-
-    document.getElementById('scannerCard')
-      .classList.add('hidden');
-
-    document.getElementById('attendeeCard')
-      .classList.remove('hidden');
-
-    document.getElementById('nombre').textContent =
-      a.Nombre || '';
-
-    document.getElementById('folio').textContent =
-      a.Folio || '';
-
-    document.getElementById('institucion').textContent =
-      a.Institucion || '';
-
-    document.getElementById('correo').textContent =
-      a.Correo || '';
-
-    document.getElementById('participacion').textContent =
-      a.TipoParticipacion || '';
-
-    document.getElementById('taller').textContent =
-      a.Taller || 'Sin seleccionar';
-
-  }
-
-
-  function scanAnother() {
-
-    document.getElementById('attendeeCard')
-      .classList.add('hidden');
-
-    document.getElementById('scannerCard')
-      .classList.remove('hidden');
-
-    document.getElementById('scanButton')
-      .classList.remove('hidden');
-
-  }
-
-
-  function showError(message) {
-
-    const box =
-      document.getElementById('errorCard');
-
-    box.textContent = message;
-
-    box.classList.remove('hidden');
-
-  }
-
+  return data.response?.result;
+}
+
+async function startScanner(){
+  document.getElementById('reader').innerHTML='';
+  scanner=new Html5Qrcode('reader');
+  try{
+    await scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:250,height:250}},onQrRead);
+  }catch(error){showError('No se pudo iniciar la cámara: '+error)}
+}
+
+async function onQrRead(decodedText){
+  try{
+    if(scanner)await scanner.stop();
+    document.getElementById('reader').innerHTML='';
+    const token=extractToken(decodedText);
+    loading(true);
+    current=await runBackend('apiGetAttendeeByToken',[token]);
+    loading(false);
+    showAttendee();
+  }catch(error){loading(false);showError(error.message)}
+}
+
+function extractToken(text){
+  const value=String(text||'').trim();
+  try{const url=new URL(value);const token=url.searchParams.get('token');if(token)return token}catch(e){}
+  return value;
+}
+
+function showSearch(){
+  stopScannerSilently();hideAllMain();document.getElementById('searchCard').classList.remove('hidden');document.getElementById('searchInput').focus();
+}
+
+async function search(){
+  const q=document.getElementById('searchInput').value.trim();
+  if(q.length<2){toast('Escribe al menos 2 caracteres.');return}
+  loading(true);
+  try{const items=await runBackend('apiSearchAttendees',[q]);loading(false);showResults(items)}
+  catch(error){loading(false);showError(error.message)}
+}
+
+function showResults(items){
+  const box=document.getElementById('results');box.innerHTML='';
+  if(!items||!items.length){box.innerHTML='<p class="muted">No se encontraron asistentes.</p>';return}
+  items.forEach(item=>{
+    const div=document.createElement('div');div.className='result';
+    div.innerHTML=`<div class="result-name">${esc(item.Nombre)}</div><div class="muted">${esc(item.Institucion||'')}</div><div class="muted">${esc(item.Folio)} · ${esc(item.Correo||'')}</div><button class="secondary big">Abrir registro</button>`;
+    div.querySelector('button').onclick=()=>openAttendee(item.Folio);box.appendChild(div);
+  });
+}
+
+async function openAttendee(folio){
+  loading(true);
+  try{current=await runBackend('apiGetAttendee',[folio]);loading(false);showAttendee()}
+  catch(error){loading(false);showError(error.message)}
+}
+
+function showAttendee(){
+  if(!current)return;
+  stopScannerSilently();hideAllMain();document.getElementById('attendeeSection').classList.remove('hidden');
+  text('name',current.Nombre||'Sin nombre');text('institution',current.Institucion||'—');text('folio',current.Folio||'—');
+  text('email',current.Correo||'—');text('type',prettyType(current.TipoParticipacion));text('workshop',current.Taller||'❌ Sin seleccionar');text('payment',prettyPayment(current.PagoValidado));
+  text('registration',yes(current.RegistroConfirmado)?`✅ Confirmado${current.HoraRegistro?' · '+current.HoraRegistro:''}`:'Pendiente');
+  if(yes(current.TieneKit))text('kit',`Sí · Talla ${current.Talla||'SIN DATO'} · ${yes(current.KitEntregado)?`✅ Entregado${current.HoraKitEntregado?' · '+current.HoraKitEntregado:''}`:'Pendiente'}`);
+  else text('kit','No corresponde');
+
+  const type=String(current.TipoParticipacion||'').toUpperCase();
+  const hasOral=type==='ORAL'||type==='ORAL_Y_CARTEL',hasPoster=type==='CARTEL'||type==='ORAL_Y_CARTEL';
+  toggle('oralBlock',hasOral);toggle('posterBlock',hasPoster);
+  if(hasOral){text('oralDate',current.FechaOral||'❌ Sin dato');text('oralTime',current.HoraOral||'❌ Sin dato');text('oralPlace',current.LugarOral||'❌ Sin dato')}
+  if(hasPoster){text('posterDate',current.FechaCartel||'❌ Sin dato');text('posterTime',current.HoraCartel||'❌ Sin dato');text('posterPlace',current.LugarCartel||'❌ Sin dato');text('posterNumber',current.NumeroCartel||'—')}
+  document.getElementById('observations').value=current.Observaciones||'';
+  renderStatus();renderActions();window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function renderStatus(){
+  const s=current._status,box=document.getElementById('statusBox');
+  const missing=s.missing&&s.missing.length?`<ul class="missing">${s.missing.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'';
+  box.innerHTML=`<div class="status ${s.level}"><div class="status-title">${esc(s.title)}</div><div>${esc(s.message)}</div>${missing}</div>`;
+}
+
+function renderActions(){
+  ['workshopAction','paymentAction','kitAction','registerAction','alreadyDone'].forEach(id=>toggle(id,false));
+  if(current._status.editableIssue==='WORKSHOP'){fillWorkshopSelect();toggle('workshopAction',true)}
+  if(current._status.editableIssue==='PAYMENT')toggle('paymentAction',true);
+  if(yes(current.RegistroConfirmado)){toggle('alreadyDone',true);return}
+  if(current._status.level!=='GREEN')return;
+  if(yes(current.TieneKit)&&!yes(current.KitEntregado)){text('kitActionText',`Entregar kit correspondiente: talla ${current.Talla||'SIN DATO'}.`);toggle('kitAction',true);return}
+  toggle('registerAction',true);
+}
+
+function fillWorkshopSelect(){
+  const select=document.getElementById('workshopSelect');select.innerHTML='<option value="">Selecciona un taller</option>';
+  (workshops||[]).forEach(w=>{const o=document.createElement('option');o.value=w.NombreTaller;o.textContent=w.NombreTaller;select.appendChild(o)});
+}
+
+async function saveWorkshop(){
+  const workshop=document.getElementById('workshopSelect').value;if(!workshop){toast('Selecciona un taller.');return}
+  loading(true);
+  try{current=await runBackend('apiUpdateWorkshop',[current.Folio,workshop]);loading(false);toast('Taller guardado.');showAttendee()}
+  catch(error){loading(false);showError(error.message)}
+}
+
+async function confirmPayment(){
+  if(!confirm('¿Confirmas que el pago fue verificado correctamente?'))return;
+  loading(true);
+  try{current=await runBackend('apiValidatePayment',[current.Folio]);loading(false);toast('Pago validado.');showAttendee()}
+  catch(error){loading(false);showError(error.message)}
+}
+
+async function deliverKit(){
+  const talla=current.Talla||'SIN DATO';if(!confirm(`¿Confirmas que entregaste el kit talla ${talla} a ${current.Nombre}?`))return;
+  loading(true);
+  try{current=await runBackend('apiMarkKitDelivered',[current.Folio]);loading(false);toast('Kit marcado como entregado.');showAttendee()}
+  catch(error){loading(false);showError(error.message)}
+}
+
+async function saveObservation(){
+  const observation=document.getElementById('observations').value;loading(true);
+  try{current=await runBackend('apiSaveObservation',[current.Folio,observation]);loading(false);toast('Observación guardada.');showAttendee()}
+  catch(error){loading(false);showError(error.message)}
+}
+
+async function registerAttendee(){
+  if(!confirm(`¿Confirmar el registro de ${current.Nombre}?`))return;
+  const observation=document.getElementById('observations').value;loading(true);
+  try{current=await runBackend('apiConfirmRegistration',[current.Folio,observation]);loading(false);toast('Registro completado.');showAttendee()}
+  catch(error){loading(false);showError(error.message)}
+}
+
+function scanAnother(){
+  current=null;hideAllMain();document.getElementById('homeCard').classList.remove('hidden');document.getElementById('results').innerHTML='';document.getElementById('searchInput').value='';startScanner();
+}
+
+function goHome(){hideAllMain();document.getElementById('homeCard').classList.remove('hidden')}
+
+function hideAllMain(){['homeCard','searchCard','attendeeSection'].forEach(id=>document.getElementById(id).classList.add('hidden'))}
+
+async function stopScannerSilently(){
+  try{if(scanner){const state=scanner.getState();if(state===2||state===3)await scanner.stop()}}catch(e){}
+  scanner=null;const reader=document.getElementById('reader');if(reader)reader.innerHTML='';
+}
+
+function prettyType(v){const map={GENERAL:'General',ORAL:'Presentación oral',CARTEL:'Cartel',ORAL_Y_CARTEL:'Presentación oral y cartel'};return map[String(v||'').toUpperCase()]||v||'—'}
+function prettyPayment(v){const x=String(v||'').toUpperCase();if(x==='SI')return'✅ Validado';if(x==='NO')return'⛔ Pendiente';if(x==='NO_APLICA')return'No aplica';return'❌ Sin dato'}
+function yes(v){return String(v||'').toUpperCase()==='SI'}
+function text(id,value){document.getElementById(id).textContent=value}
+function toggle(id,show){document.getElementById(id).classList.toggle('hidden',!show)}
+function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
+function loading(show){document.getElementById('loading').style.display=show?'flex':'none'}
+function toast(message){const t=document.getElementById('toast');t.textContent=message;t.style.display='block';clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>t.style.display='none',2800)}
+function showError(message){loading(false);alert(message)}
 </script>
-
 </body>
 </html>
+
