@@ -273,7 +273,7 @@
       <div class="topline">
         <div>
           <strong id="userInfo"></strong>
-          <div class="muted">Personal autorizado</div>
+          <div class="muted">Personal autorizado · Backend <span id="backendVersion">—</span></div>
         </div>
       </div>
 
@@ -472,6 +472,7 @@
           document.getElementById('loginCard').classList.add('hidden');
           document.getElementById('homeCard').classList.remove('hidden');
           document.getElementById('userInfo').textContent = ping.email;
+          document.getElementById('backendVersion').textContent = ping.version || 'sin versión';
           if (loginStatus) loginStatus.textContent = '';
 
         } catch (error) {
