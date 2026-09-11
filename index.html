@@ -6,8 +6,6 @@
   <meta name="theme-color" content="#285b87">
 
   <!-- iPhone / iPad -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="CNEER 2026">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -268,6 +266,7 @@
       <h2>Acceso de staff</h2>
       <p>Inicia sesión con una cuenta autorizada para utilizar el sistema de registro.</p>
       <button class="primary big" onclick="loginGoogle()">Iniciar sesión con Google</button>
+      <p id="loginStatus" class="muted" style="margin-bottom:0"></p>
     </section>
 
     <section id="homeCard" class="card hidden">
@@ -422,7 +421,7 @@
   let accessToken = null;
   let scanner = null;
   let current = null;
-  let shirtSizes = [];
+  const shirtSizes = ['CH', 'M', 'G', 'XG', 'XXG'];
 
   document.getElementById('searchInput').addEventListener('keydown', event => {
     if (event.key === 'Enter') search();
@@ -434,6 +433,8 @@
      ========================================================= */
 
   function loginGoogle() {
+    const loginStatus = document.getElementById('loginStatus');
+    if (loginStatus) loginStatus.textContent = 'Abriendo Google…';
     if (!window.google || !google.accounts || !google.accounts.oauth2) {
       showError('Google Identity Services todavía no ha terminado de cargar. Intenta nuevamente en unos segundos.');
       return;
@@ -449,6 +450,7 @@
         }
 
         accessToken = response.access_token;
+        if (loginStatus) loginStatus.textContent = 'Cuenta seleccionada. Conectando con CNEER…';
 
         try {
           const userResponse = await fetch(
@@ -466,18 +468,15 @@
           }
 
           const ping = await runBackend('apiPing');
-          const appConfig = await runBackend('apiGetAppConfig');
-
-          shirtSizes = Array.isArray(appConfig?.shirtSizes)
-            ? appConfig.shirtSizes
-            : [];
 
           document.getElementById('loginCard').classList.add('hidden');
           document.getElementById('homeCard').classList.remove('hidden');
           document.getElementById('userInfo').textContent = ping.email;
+          if (loginStatus) loginStatus.textContent = '';
 
         } catch (error) {
           accessToken = null;
+          if (loginStatus) loginStatus.textContent = 'No se pudo conectar: ' + readableError(error);
           showError(error.message);
         }
       }
