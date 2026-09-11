@@ -826,18 +826,19 @@
       return;
     }
 
-    if (current._status.level !== 'GREEN') {
-      return;
-    }
-
-    // Si corresponde kit, la talla se decide en ESTE momento.
-    if (yes(current.TieneKit) && !yes(current.KitEntregado)) {
+    // Paso normal del flujo: entregar kit y registrar talla.
+    // Mientras el kit esté pendiente NO se muestra el botón de confirmar registro.
+    if (current._status.editableIssue === 'KIT') {
       fillShirtSizeSelect();
       toggle('kitAction', true);
       return;
     }
 
-    // Sin kit, o con kit ya entregado: se puede cerrar el registro.
+    if (current._status.level !== 'GREEN') {
+      return;
+    }
+
+    // Solo cuando todos los pasos previos están resueltos se confirma el registro.
     toggle('registerAction', true);
   }
 
